@@ -1,5 +1,5 @@
-const CENTRAL_SERVER_IP = "128.237.220.144";
-const CENTRAL_SERVER_PORT = 8085;
+const CENTRAL_SERVER_IP = "peernet.heroku.com";
+const CENTRAL_SERVER_PORT = 80;
 const PEER_SERVER_SOCK_PORT = 8082;
 
 var async = require('async');
