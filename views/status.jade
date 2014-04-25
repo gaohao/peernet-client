@@ -1,0 +1,23 @@
+extends layout
+block scripts
+    script(type='text/javascript', src='static/js/lib/jquery-1.9.1.min.js')
+block content
+    div(class='container-fluid')
+    div(class='row-fluid')
+        div(class='span12')
+            div(style='margin: 0px auto; width: 480px;')
+                form(action='/status', method='POST')
+                    textarea(class='field-span12' rows='4' name='status' placeholder="What's up? Enter your status here!")
+                    div(class='span2 pull-right')
+                        button(type='submit' class='btn btn-primary btn-block') Post
+    div(class='row-fluid')
+        div(class='span12')
+            div(style='margin: 0px auto; width: 480px;')
+                #statuses
+                    for status in statuses
+                        hr
+                        span(style='font-size:12px; color: #888; padding:5px padding-left: 10px;')=status.time
+                        br
+                        span(style='font-size:12px; color: #888; padding:5px padding-left: 10px;')=status.author
+                        p=status.text
+

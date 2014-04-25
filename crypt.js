@@ -5,7 +5,7 @@ const ENCODING = "utf8";
 var ursa = require("ursa");
 var mp = require('./mp.js');
 var redis_module = require("redis");
-var redislib = redis_module.createClient(port,host);
+var redislib = redis_module.createClient(REDIS_PORT,REDIS_HOST);
 
 var keysA;
 var pubPemA;

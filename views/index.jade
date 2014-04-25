@@ -1,0 +1,35 @@
+extends layout
+
+block scripts
+	script(type='text/javascript', src='http://ajax.googleapis.com/ajax/libs/jquery/1.9.1/jquery.min.js')
+	script(type='text/javascript', src="/socket.io/socket.io.js")
+block content
+	div(class='container-fluid')
+	div(class='row-fluid')
+		div(class='span12')
+			div(style='margin: 0px auto; width: 480px;')
+				button(onclick='sendMsg("alice")') Send to alice
+				button(onclick='sendMsg("bob")') Send to bob
+				button(onclick='sendMsg("charlie")') Send to charlie
+			div(style='margin: 0px auto; width: 480px;')
+				p Status:
+				each i in ["first tweet", "PeerNet rocks", "chugege"]
+					label= i
+					hr
+	hr
+	div(class='row-fluid')
+		div(class='span12')
+			p#text(style="text-align:center") This is Home
+	hr
+	div(class='row-fluid')
+		div(class='span12')
+			div(style="margin: 0px auto; width: 480px;") hello
+block scriptfoot
+	script(type='text/javascript').
+		var friends = {alice: {name: 'alice', addr: 5008}, bob: {name: 'bob', addr: 5009}, charlie: {name: 'charlie', addr: 5010}}
+		var friendNames = ['alice', 'bob', 'charlie'];
+		function sendMsg (username) {
+			var socket = io.connect('http://localhost:' + friends[username].addr);
+			socket.emit(username, { msg: 'hello from ' + username});
+		};
+		

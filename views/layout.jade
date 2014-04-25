@@ -1,0 +1,47 @@
+doctype html
+html(lang='en')
+    head
+        title PeerNet
+        block scripthead
+            meta(name='viewport', content='width=device-width, initial-scale=1.0')
+            link(rel='stylesheet', href='/css/bootstrap.css', media='screen')
+            link(href="css/bootstrap-responsive.css", rel="stylesheet")
+        block scripts
+    body(style="padding-top: 60px;")
+        block header
+            div(class="navbar navbar-inverse navbar-fixed-top")
+                div(class="navbar-inner")
+                    div(class="container-fluid")
+                        button(type="button", class="btn btn-navbar", data-toggle="collapse", data-target=".nav-collapse")
+                            span(class="icon-bar")
+                            span(class="icon-bar")
+                            span(class="icon-bar")
+                        a(class="brand",href="/")
+                            | PeerNet
+                        div(class="nav-collapse collapse")
+                            ul(class="nav")
+                                li(class="active")
+                                    a(href="/status")
+                                        | Status
+                                li(class="active")
+                                    a(href="/following")
+                                        | Following
+                                li(class="active")
+                                    a(href="/followers")
+                                        | Followers
+                                li(class="active")
+                                    a(href="/messages")
+                                        | Message
+                                li(class="active")
+                                    a(href="/events")
+                                        | Events
+        block content
+        block scriptfoot
+        block footer
+            hr
+            footer
+                p(style="text-align:center")
+                    | Created by 
+                    a(href="http://haogao.me")
+                        | Group 30
+

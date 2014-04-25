@@ -1,0 +1,24 @@
+{
+  "name": "peernet-client",
+  "version": "0.0.1",
+  "description": "peernet-client ==============",
+  "main": "server.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "node server.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/gaohao/peernet-client"
+  },
+  "author": "",
+  "license": "BSD-2-Clause",
+  "bugs": {
+    "url": "https://github.com/gaohao/peernet-client/issues"
+  },
+  "homepage": "https://github.com/gaohao/peernet-client",
+  "dependencies": {
+    "async": "~0.7.0",
+    "ursa": "~0.8.0"
+  }
+}
