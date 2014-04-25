@@ -1,4 +1,4 @@
-const CENTRAL_SERVER_IP = "peernet.heroku.com";
+const CENTRAL_SERVER_IP = "peernet.herokuapp.com";
 const CENTRAL_SERVER_PORT = 80;
 const PEER_SERVER_SOCK_PORT = 8082;
 

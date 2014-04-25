@@ -1,4 +1,4 @@
-var socket = io.connect('peernet.heroku.com:80');
+var socket = io.connect('http://peernet.herokuapp.com');
   socket.on('connect', function(socket1) { 
   	//alert($( "#uname" ).val());
   
