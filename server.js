@@ -250,7 +250,7 @@ function updateStatus(status, fn) {
             });
 }
 
-function getStatus(fn) {
+function getMessage(fn) {
     var messages = [];
     async.series([
             function (callback) {
