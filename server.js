@@ -4,6 +4,7 @@ const BACKEND_SOCK_PORT = 8081;
 const PEER_SERVER_SOCK_PORT = 8082;
 const USER_PORT = 5008;
 const FOLLOW_USER = 'FollowUser';
+const SEND_MESSAGE = 'SendMessage';
 const UPDATE_STATUS = 'UpdateStatus';
 const CENTRAL_SERVER_IP = 'peernet.herokuapp.com';
 const CENTRAL_SERVER_PORT = '80';
@@ -43,6 +44,17 @@ function Status(author, time, text) {
     this.author = author;
     this.time = time;
     this.text = text;
+}
+
+/* A constructor for Message class */
+function Message(from, to, text, time) {
+    this.from = from;
+    this.to = to;
+    this.text = text;
+    this.time = time;
+    this.toString = function () {
+        this.from + "+" + this.to + "+" this.text + "+" + this.time;
+    }
 }
 
 /**
@@ -134,7 +146,18 @@ app.get('/followers', function (req, res) {
 
 /* Messages page */
 app.get('/messages', function (req, res) {
-    res.render('messages');
+    getMessage(function (messages) {
+        res.render('messages', { 'messages': messages });
+    });
+});
+app.post('/messages', function (req, res) {
+    var friend = req.body.friend;
+    var message = req.body.message;
+    var message = new Message(username, friend, message, (new Date()).getTime());
+    mp.send(SEND_MESSAGE, friend, true, message.toString());
+    updateMessage(message, function (messages) {
+        res.render('messages', { 'messages': messages });
+    })
 });
 
 /* Events page */
@@ -227,6 +250,50 @@ function updateStatus(status, fn) {
             });
 }
 
+function getStatus(fn) {
+    var messages = [];
+    async.series([
+            function (callback) {
+                redisClient.zrevrange(message_key, 0, -1, function (err, res) {
+                    callback(err, res);
+                });
+            }],
+            function (err, res) {
+                if (!err) {
+                    res[0].forEach(function (e, i) {
+                        var json = JSON.parse(e);
+                        messages.push(new Message(json.from, json.to, json.text, json.time));
+                    });
+                    fn(messages);
+                }
+            });
+}
+
+function updateMessage(message, fn) {
+    var messages = [];
+    async.series([
+            function (callback) {
+                var message_json = JSON.stringify({ 'from': message.from, 'to': message.to,'text': message.text, 'time', message.time });
+                redisClient.zadd(message_key, message.time, message_json, function (err, res) {
+                    callback(err, res);
+                });
+            },
+            function (callback) {
+                redisClient.zrevrange(message_key, 0, -1, function (err, res) {
+                    callback(err, res);
+                });
+            }],
+            function (err, res) {
+                if (!err) {
+                    res[1].forEach(function (e, i) {
+                        var json = JSON.parse(e);
+                        messages.push(new Message(json.from, json.to, json.text, json.time));
+                    });
+                    fn(messages);
+                }
+            });
+}
+
 /* Users can follow other users. */
 function updateFollowees(followee, fn) {
     var followees = [];
@@ -302,6 +369,7 @@ var backendSock = mp.getServerIO(BACKEND_SOCK_PORT);
 var peerServerSock = mp.getServerIO(PEER_SERVER_SOCK_PORT);
 
 var status_key = 'peernet:' + username + ':status';
+var message_key = 'peernet:' + username + ':message';
 var followee_key = 'peernet:' + username + ':followee';
 var follower_key = 'peernet:' + username + ':follower';
 
