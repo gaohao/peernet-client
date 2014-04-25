@@ -19,6 +19,11 @@
   "homepage": "https://github.com/gaohao/peernet-client",
   "dependencies": {
     "async": "~0.7.0",
-    "ursa": "~0.8.0"
+    "ursa": "~0.8.0",
+    "express": "~3.1.0",
+    "socket.io-client": "~0.9.16",
+    "socket.io": "~0.9.16",
+    "redis": "~0.10.1",
+    "jade": "~1.3.1"
   }
 }
