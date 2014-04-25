@@ -53,7 +53,7 @@ function Message(from, to, text, time) {
     this.text = text;
     this.time = time;
     this.toString = function () {
-        this.from + "+" + this.to + "+" this.text + "+" + this.time;
+        return this.from + "+" + this.to + "+" + this.text + "+" + this.time;
     }
 }
 
@@ -273,7 +273,7 @@ function updateMessage(message, fn) {
     var messages = [];
     async.series([
             function (callback) {
-                var message_json = JSON.stringify({ 'from': message.from, 'to': message.to,'text': message.text, 'time', message.time });
+                var message_json = JSON.stringify({ 'from': message.from, 'to': message.to, 'text': message.text, 'time': message.time });
                 redisClient.zadd(message_key, message.time, message_json, function (err, res) {
                     callback(err, res);
                 });
