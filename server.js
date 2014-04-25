@@ -155,7 +155,7 @@ function login(username, password, res) {
     crypt.init(username);
 
     var loginSock = mp.getClientIO(CENTRAL_SERVER_IP, CENTRAL_SERVER_PORT);
-    loginSock.emit('authenticate', username, password);
+    loginSock.emit('authenticate', username, password, getHostIp());
     loginSock.on('auth', function (data, flag) {
         if (flag == 1) {
             res.render('login_success');
