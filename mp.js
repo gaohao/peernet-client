@@ -7,6 +7,7 @@ var ioClient = require('socket.io-client');
 
 var servers = { };
 var clients = { };
+var cache = { };
 
 var getCentralServer = function () {
     return getClientIO(CENTRAL_SERVER_IP, CENTRAL_SERVER_PORT);
@@ -57,6 +58,10 @@ var send = function (eventName, destUsername, shouldEncryptMsg, msg) {
     {
         console.log("in encrypt block "+ shouldEncryptMsg);
 
+	   if(cache[destUsername].ipadd == null)
+
+        {
+
         //  console.log("in get userip callback");
         async.series([
                 function (callback) {
@@ -64,6 +69,7 @@ var send = function (eventName, destUsername, shouldEncryptMsg, msg) {
                     central.on('receiveIP' + destUsername,function cb_wrap(ip) {
                         console.log("receiveIP"+destUsername+" event occured");
                         central.removeListener('receiveIP' + destUsername, cb_wrap);
+                        cache[destUsername] = {"ipadd":ip};
                         callback(false, ip);
                     });
                     central.emit('getIP', destUsername);
@@ -72,6 +78,7 @@ var send = function (eventName, destUsername, shouldEncryptMsg, msg) {
                     getCentralServer().on('recvPubKey' + destUsername, function sendMsg(pukey) {
                         console.log("recvPubKey"+destUsername+" event occured");
                         getCentralServer().removeListener('recvPubKey'+destUsername, sendMsg);
+                        cache[destUsername] = {"pubkey":pukey};
                         callback(false, pukey);
                     });
                     getCentralServer().emit('getPubKey', destUsername);
@@ -94,6 +101,16 @@ var send = function (eventName, destUsername, shouldEncryptMsg, msg) {
                         }
                     }
                 });
+    }
+
+    else
+    {
+            var friendSock = getClientIO(cache[destUsername].ipadd, PEER_SERVER_SOCK_PORT); 
+            console.log("Data to be sent to " + destUsername + " is " + msg);
+            var crypto = require('./crypt.js');
+            var encryptedMsg = crypto.encrypt(msg, cache[destUsername].pukey);
+            friendSock.emit(eventName, encryptedMsg, "dummySignature");
+    }
 
     } else {
         getUserIp(destUsername,function(ip) {
