@@ -12,13 +12,15 @@ block content
                         span(style='font-size:12px; color: #888; padding:5px padding-left: 10px;')=message.time
                         br
                         span(style='font-size:12px; color: #888; padding:5px padding-left: 10px;')=message.from
+                        br
+                        span(style='font-size:12px; color: #888; padding:5px padding-left: 10px;')=message.to
                         p=message.text
     div(class='row-fluid')
         div(class='span12')
             div(style='margin: 0px auto; width: 480px;')
                 form(action='/messages', method='POST')
-                    input(type='text' class='field span12 pull-right' name='recepient' placeholder='Enter recepient here')
-                    textarea(class='field-span12' rows='4' name='status' placeholder="Enter your private message here")
+                    input(type='text' class='field span12 pull-right' name='friend' placeholder='Enter recepient here')
+                    textarea(class='field-span12' rows='4' name='message' placeholder="Enter your private message here")
                     div(class='span2 pull-right')
                         button(type='submit' class='btn btn-primary btn-block') Send
 

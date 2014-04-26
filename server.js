@@ -262,7 +262,8 @@ function getMessage(fn) {
                 if (!err) {
                     res[0].forEach(function (e, i) {
                         var json = JSON.parse(e);
-                        messages.push(new Message(json.from, json.to, json.text, json.time));
+                        var date = new Date(json.time);
+                        messages.push(new Message(json.from, json.to, json.text, date));
                     });
                     fn(messages);
                 }
@@ -393,3 +394,4 @@ peerServerSock.on('connection', function (socket) {
         redisClient.zadd(status_key, status_time, status_json);
     });
 });
+
