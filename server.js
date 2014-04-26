@@ -288,7 +288,8 @@ function updateMessage(message, fn) {
                 if (!err) {
                     res[1].forEach(function (e, i) {
                         var json = JSON.parse(e);
-                        messages.push(new Message(json.from, json.to, json.text, json.time));
+                        var date = new Date(json.time);
+                        messages.push(new Message(json.from, json.to, json.text, date));
                     });
                     fn(messages);
                 }
