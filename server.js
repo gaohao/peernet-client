@@ -5,6 +5,7 @@ const PEER_SERVER_SOCK_PORT = 8082;
 const USER_PORT = 5008;
 const FOLLOW_USER = 'FollowUser';
 const SEND_MESSAGE = 'SendMessage';
+const UPDATE_EVENT = 'UpdateEvent';
 const UPDATE_STATUS = 'UpdateStatus';
 const CENTRAL_SERVER_IP = 'peernet.herokuapp.com';
 const CENTRAL_SERVER_PORT = '80';
@@ -48,6 +49,17 @@ function Status(author, time, text) {
 
 /* A constructor for Message class */
 function Message(from, to, text, time) {
+    this.from = from;
+    this.to = to;
+    this.text = text;
+    this.time = time;
+    this.toString = function () {
+        return this.from + "+" + this.to + "+" + this.text + "+" + this.time;
+    }
+}
+
+/* A constructor for Event class */
+function Event(from, to, text, time) {
     this.from = from;
     this.to = to;
     this.text = text;
@@ -120,6 +132,22 @@ app.post('/status', function (req, res) {
     multicastStatus(req.body.status);
     updateStatus(req.body.status, function (statuses) {
         res.render('status', { 'statuses': statuses } );
+    });
+});
+
+/* Event page */
+app.get('/events', function (req, res) {
+    getEvents(function (events) {
+        res.render('events', { 'events': events });
+    });
+});
+app.post('/events', function (req, res) {
+    var friends = req.body.friends;
+    var event = req.body.event;
+    var event = new Event(username, friends, event, (new Date()).getTime());
+    multicastEvent(event);
+    updateEvent(event, function (events) {
+        res.render('events', { 'events': events } );
     });
 });
 
@@ -201,6 +229,16 @@ function multicastStatus(status) {
     });
 }
 
+function multicastEvent(event) {
+    var friends = event.to.split(',');
+    for (var i in friends) {
+        console.log('sending status update to' + friends[i].name);
+        //fakeCentralServer.getUserIp(followers[i].name, function (followerIp) {
+        mp.send(UPDATE_EVENT, friends[i], true, event.toString());
+        //});
+    }
+}
+
 /* Users can get status from redis. */
 function getStatus(fn) {
     var statuses = [];
@@ -246,6 +284,52 @@ function updateStatus(status, fn) {
                         statuses.push(new Status(json.author, date.toString(), json.text));
                     });
                     fn(statuses);
+                }
+            });
+}
+
+function getEvent(fn) {
+    var events = [];
+    async.series([
+            function (callback) {
+                redisClient.zrevrange(event_key, 0, -1, function (err, res) {
+                    callback(err, res);
+                });
+            }],
+            function (err, res) {
+                if (!err) {
+                    res[0].forEach(function (e, i) {
+                        var json = JSON.parse(e);
+                        var date = new Date(json.time);
+                        events.push(new Event(json.from, json.to, json.text, date));
+                    });
+                    fn(events);
+                }
+            });
+}
+
+function updateEvent(event, fn) {
+    var events = [];
+    async.series([
+            function (callback) {
+                var event_json = JSON.stringify({ 'from': event.from, 'to': event.to, 'text': event.text, 'time': event.time });
+                redisClient.zadd(event_key, event.time, event_json, function (err, res) {
+                    callback(err, res);
+                });
+            },
+            function (callback) {
+                redisClient.zrevrange(event_key, 0, -1, function (err, res) {
+                    callback(err, res);
+                });
+            }],
+            function (err, res) {
+                if (!err) {
+                    res[1].forEach(function (e, i) {
+                        var json = JSON.parse(e);
+                        var date = new Date(json.time);
+                        events.push(new Event(json.from, json.to, json.text, date));
+                    });
+                    fn(events);
                 }
             });
 }
@@ -372,6 +456,7 @@ var peerServerSock = mp.getServerIO(PEER_SERVER_SOCK_PORT);
 
 var status_key = 'peernet:' + username + ':status';
 var message_key = 'peernet:' + username + ':message';
+var event_key = 'peernet:' + username + ':event';
 var followee_key = 'peernet:' + username + ':followee';
 var follower_key = 'peernet:' + username + ':follower';
 
@@ -403,6 +488,16 @@ peerServerSock.on('connection', function (socket) {
         var message_json = JSON.stringify({ 'from': parsed_msg[0], 'to': parsed_msg[1],'text': parsed_msg[2], 'time': message_time, });
         console.log("received message [" + parsed_msg[2] + "] from [" + parsed_msg[0] + "]");
         redisClient.zadd(message_key, message_time, message_json);
+    });
+
+    socket.on(UPDATE_EVENT, function (msg) {
+        var decrypted_msg = crypt.decrypt(msg);
+        //var decrypted_msg = msg;
+        var parsed_msg = decrypted_msg.split('+');
+        var event_time = (new Date()).getTime();
+        var event_json = JSON.stringify({ 'from': parsed_msg[0], 'to': parsed_msg[1],'text': parsed_msg[2], 'time': event_time, });
+        console.log("received event [" + parsed_msg[2] + "] from [" + parsed_msg[0] + "]");
+        redisClient.zadd(event_key, event_time, event_json);
     });
 });
 
