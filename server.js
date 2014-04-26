@@ -137,7 +137,7 @@ app.post('/status', function (req, res) {
 
 /* Event page */
 app.get('/events', function (req, res) {
-    getEvents(function (events) {
+    getEvent(function (events) {
         res.render('events', { 'events': events });
     });
 });
@@ -186,11 +186,6 @@ app.post('/messages', function (req, res) {
     updateMessage(message, function (messages) {
         res.render('messages', { 'messages': messages });
     })
-});
-
-/* Events page */
-app.get('/events', function (req, res) {
-    res.render('events');
 });
 
 /* --- Feature Implementations --- */
