@@ -6,15 +6,21 @@ block content
     div(class='row-fluid')
         div(class='span12')
             div(style='margin: 0px auto; width: 480px;')
-                each i in ["Event_1", "Event_2"]
-                    span(style='font-size:12px; color: #888; padding:5px padding-left: 10px;') Time
-                    p=i
-                    hr
+                #events
+                    for event in events
+                        hr
+                        span(style='font-size:12px; color: #888; padding:5px padding-left: 10px;')=event.time
+                        br
+                        span(style='font-size:12px; color: #888; padding:5px padding-left: 10px;')=event.from
+                        br
+                        span(style='font-size:12px; color: #888; padding:5px padding-left: 10px;')=event.to
+                        p=event.text
     div(class='row-fluid')
         div(class='span12')
             div(style='margin: 0px auto; width: 480px;')
-                form(action='/send_message', method='POST')
-                    input(type='text' class='field span12 pull-right' name='recepient' placeholder='Enter friends you want to invite')
-                    textarea(class='field-span12' rows='4' name='status' placeholder="Enter your event description here")
+                form(action='/events', method='POST')
+                    input(type='text' class='field span12 pull-right' name='friends' placeholder='Enter friends you want to invite')
+                    textarea(class='field-span12' rows='4' name='event' placeholder="Enter your event description here")
                     div(class='span2 pull-right')
                         button(type='submit' class='btn btn-primary btn-block') Invite
+
