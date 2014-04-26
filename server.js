@@ -392,4 +392,14 @@ peerServerSock.on('connection', function (socket) {
         console.log("received status update [" + parsed_msg[1] + "] from [" + parsed_msg[0] + "]");
         redisClient.zadd(status_key, status_time, status_json);
     });
+
+    socket.on(SEND_MESSAGE, function (msg) {
+        var decrypted_msg = crypt.decrypt(msg);
+        //var decrypted_msg = msg;
+        var parsed_msg = decrypted_msg.split('+');
+        var message_time = (new Date()).getTime();
+        var message_json = JSON.stringify({ 'from': parsed_msg[0], 'to': parsed_msg[1],'text': parsed_msg[2], 'time': message_time, });
+        console.log("received message [" + parsed_msg[2] + "] from [" + parsed_msg[0] + "]");
+        redisClient.zadd(message_key, message_time, message_json);
+    });
 });
