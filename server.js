@@ -9,6 +9,7 @@ const UPDATE_EVENT = 'UpdateEvent';
 const UPDATE_STATUS = 'UpdateStatus';
 const CENTRAL_SERVER_IP = 'peernet.herokuapp.com';
 const CENTRAL_SERVER_PORT = '80';
+const REGISTRATION_HOST = 'http://peernet.herokuapp.com';
 
 /* --- Modules and Settings --- */
 var express = require('express');
@@ -17,6 +18,7 @@ var mp = require('./mp.js');
 var app = express();
 var server = http.createServer(app);
 var io = require('socket.io').listen(server);
+var ioClient = require('socket.io-client');
 var redis = require("redis");
 var redisClient = redis.createClient(REDIS_PORT, 'localhost');
 var async = require('async');
@@ -115,6 +117,24 @@ app.post('/login', function (req, res) {
     login(req.body.username, req.body.password, res);
 });
 
+/* Registration page */
+app.get('/register', function (req, res) {
+    res.render('register');
+});
+app.post('/register', function (req, res) {
+    signup(req.body.username, req.body.email, req.body.password, res);
+});
+
+/* Export user data */
+app.get('/export', function (req, res) {
+    exportData(res);
+});
+
+/* Erase user data */
+app.get('/erase', function (req, res) {
+    eraseData(res);
+});
+
 /* Homepage, default to Status page */
 app.get('/', function (req, res) {
     getStatus(function (statuses) {
@@ -193,10 +213,7 @@ app.post('/messages', function (req, res) {
 /* Login to the centralized server */
 function login(username, password, res) {
     //fakeCentralServer.updateUserIp(username, getHostIp());
-
-
     //res.render('login_success');
-
 
     crypt.init(username);
 
@@ -209,7 +226,42 @@ function login(username, password, res) {
             res.render('login_fail');
         }
     });
+}
 
+/* Registration with the central server */
+function signup(username, email, password, res) {
+    var socket = ioClient.connect(REGISTRATION_HOST);
+    socket.on('success', function (data) {
+        console.log(data);
+        res.render('register_success');
+    });
+    socket.on('fail', function (data) {
+        console.log(data);
+        res.render('register_fail', { 'err_str': data.message });
+    });
+    socket.emit('userdata', { uname: username, email: email, password: password });
+}
+
+/* Export user data */
+function exportData(res) {
+    redisClient.save(function (err) {
+        if (!err) {
+            res.render('export_success');
+        } else {
+            res.render('export_fail');
+        }
+    });
+}
+
+/* Erase user data */
+function eraseData(res) {
+    redisClient.flushall(function (err) {
+        if (!err) {
+            res.render('erase_success');
+        } else {
+            res.render('erase_fail');
+        }
+    });
 }
 
 /* Multicast status updates to followers. */

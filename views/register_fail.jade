@@ -1,0 +1,18 @@
+extends layout
+block scripts
+    script(type='text/javascript', src='static/js/lib/jquery-1.9.1.min.js')
+block content
+    div(class='container-fluid')
+    div(class='row-fluid')
+        div(class='span12')
+            div(style='margin: 0px auto; width: 480px;')
+                div(class='offset4 span4')
+                    #err_str
+                        p=err_str
+                    form(action='/register', method='POST')
+                        input(type='text' name='username' placeholder='Enter Username')
+                        input(type='text' name='email' placeholder='Enter E-mail')
+                        input(type='password' name='password' placeholder='Enter Password')
+                        div(class='span6')
+                            button(type='submit' class='btn btn-primary btn-block') Register
+
