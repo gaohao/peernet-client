@@ -164,7 +164,9 @@ app.get('/events', function (req, res) {
 app.post('/events', function (req, res) {
     var friends = req.body.friends;
     var event = req.body.event;
-    var event = new Event(username, friends, event, (new Date()).getTime());
+    var ftime = req.body.eventdate + req.body.eventtime;
+    //var event = new Event(username, friends, event, (new Date()).getTime());
+    var event = new Event(username, friends, event, ftime);
     multicastEvent(event);
     updateEvent(event, function (events) {
         res.render('events', { 'events': events } );
