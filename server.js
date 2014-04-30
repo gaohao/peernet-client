@@ -215,7 +215,7 @@ function login(username, password, res) {
     //fakeCentralServer.updateUserIp(username, getHostIp());
     //res.render('login_success');
 
-    crypt.init(username);
+    //crypt.init(username);
 
     var loginSock = mp.getClientIO(CENTRAL_SERVER_IP, CENTRAL_SERVER_PORT);
     loginSock.emit('authenticate', username, password, getHostIp());
@@ -496,6 +496,7 @@ var servers = { };
 var clients = { };
 
 var username = process.argv[2];
+crypt.init(username);
 console.log('Your name is ' + username);
 
 var backendSock = mp.getServerIO(BACKEND_SOCK_PORT);

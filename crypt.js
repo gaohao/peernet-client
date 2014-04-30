@@ -52,14 +52,14 @@ exports.init = function (username) {
 };
 
 exports.encrypt = function (message, key) {
-    this.init();
+  //  this.init();
     var pubKeyObject = ursa.createPublicKey(key, ENCODING);
     var encrypted = pubKeyObject.encrypt(message, ENCODING);
     return encrypted;
 };
 
 exports.decrypt = function (encrypted) {
-    this.init();
+   // this.init();
     var decrypted = privKey.decrypt(encrypted, ENCODING);
     console.log("Decreypted message is " + decrypted);
     return String(decrypted);

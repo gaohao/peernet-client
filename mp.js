@@ -26,7 +26,7 @@ var getUserIp = function (userName, callback) {
 
 var getServerIO = function (port) {
     if (servers[port] == null) {
-        var io = require('socket.io').listen(port);
+        var io = require('socket.io').listen(port,{log:true});
         if (io == null) {
             return null;
         }
@@ -40,7 +40,7 @@ exports.getServerIO = getServerIO;
 
 var getClientIO = function (ip, port) {
     if (clients[ip + port] == null) {
-        var socket = ioClient.connect(ip, {port:port,reconnect: true});
+        var socket = ioClient.connect(ip, {port:port,reconnect: false});
         if(socket==null) {
             return null;
         }
@@ -111,7 +111,10 @@ var send = function (eventName, destUsername, shouldEncryptMsg, msg) {
             console.log("Data to be sent to " + destUsername + " is " + msg);
             var crypto = require('./crypt.js');
             var encryptedMsg = crypto.encrypt(msg, cache[destUsername].pubkey);
-            friendSock.emit(eventName, encryptedMsg, "dummySignature");
+            var status = friendSock.emit(eventName, encryptedMsg, "dummySignature");
+           // console.log("status is "+status.toSource());
+           //printObject(status);
+
     }
 
     } else {
@@ -122,5 +125,15 @@ var send = function (eventName, destUsername, shouldEncryptMsg, msg) {
         });
     }
 };
+
+function printObject(o) {
+  var out = '';
+  for (var p in o) {
+    out += p + ': ' + o[p] + '\n';
+  }
+  console.log("output is "+out);
+}
+
+
 exports.send = send;
 
