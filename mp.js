@@ -1,4 +1,5 @@
 const CENTRAL_SERVER_IP = "peernet.herokuapp.com";
+const REPLICA_SERVER_IP = "peernet-bak.herokuapp.com";
 const CENTRAL_SERVER_PORT = 80;
 const PEER_SERVER_SOCK_PORT = 8082;
 
@@ -14,8 +15,19 @@ var getCentralServer = function () {
 };
 exports.getCentralServer = getCentralServer;
 
+var getReplicaServer = function () {
+    return getClientIO(REPLICA_SERVER_IP, CENTRAL_SERVER_PORT);
+};
+exports.getReplicaServer = getReplicaServer;
+
 var getUserIp = function (userName, callback) {
     var central = getCentralServer();
+    if (central.socket.connected == false)
+    {
+        var central = getReplicaServer();
+        
+    }
+
     central.emit('getIP', userName);
     central.on('receiveIP' + userName, function cb_wrap(ip) {
         console.log("receiveIP" + userName + " event occured");
@@ -66,7 +78,11 @@ var send = function (eventName, destUsername, shouldEncryptMsg, msg) {
         async.series([
                 function (callback) {
                     var central = getCentralServer();
-                    central.on('receiveIP' + destUsername,function cb_wrap(ip) {
+                    if (central.socket.connected == false)
+                        {
+                            var central = getReplicaServer();
+                        }
+                        central.on('receiveIP' + destUsername,function cb_wrap(ip) {
                         console.log("receiveIP"+destUsername+" event occured");
                         central.removeListener('receiveIP' + destUsername, cb_wrap);
                         //cache[destUsername] = {"ipadd":ip};
@@ -75,13 +91,18 @@ var send = function (eventName, destUsername, shouldEncryptMsg, msg) {
                     central.emit('getIP', destUsername);
                 },
                 function (callback) { 
-                    getCentralServer().on('recvPubKey' + destUsername, function sendMsg(pukey) {
+                    var central = getCentralServer();
+                    if (central.socket.connected == false)
+                        {
+                            var central = getReplicaServer();
+                        }
+                    central.on('recvPubKey' + destUsername, function sendMsg(pukey) {
                         console.log("recvPubKey"+destUsername+" event occured");
-                        getCentralServer().removeListener('recvPubKey'+destUsername, sendMsg);
+                        central.removeListener('recvPubKey'+destUsername, sendMsg);
                         //cache[destUsername] = {"pubkey":pukey};
                         callback(false, pukey);
                     });
-                    getCentralServer().emit('getPubKey', destUsername);
+                    central.emit('getPubKey', destUsername);
                 }],
                 function (err, res) {
                     if (!err) {
