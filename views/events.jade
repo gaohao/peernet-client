@@ -20,6 +20,8 @@ block content
             div(style='margin: 0px auto; width: 480px;')
                 form(action='/events', method='POST')
                     input(type='text' class='field span12 pull-right' name='friends' placeholder='Enter friends you want to invite')
+                    input(type='date',class='field span12 pull-right' name='eventdate' value='2014-05-01')
+                    input(type='time',class='field span12 pull-right' name='eventtime' value='08:00')
                     textarea(class='field-span12' rows='4' name='event' placeholder="Enter your event description here")
                     div(class='span2 pull-right')
                         button(type='submit' class='btn btn-primary btn-block') Invite
