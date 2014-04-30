@@ -22,11 +22,8 @@ var ioClient = require('socket.io-client');
 var redis = require("redis");
 var redisClient = redis.createClient(REDIS_PORT, 'localhost');
 var async = require('async');
-
 var crypt = require('./crypt.js');
 
-
-//var fakeCentralServer = require('../utils/fakeserver.js').makeFakeCentralServer();
 app.use(express.json()); // to support JSON-encoded bodies
 app.use(express.urlencoded()); // to support URL-encoded bodies
 app.set('view engine', 'jade');
@@ -57,7 +54,7 @@ function Message(from, to, text, time) {
     this.time = time;
     this.toString = function () {
         return this.from + "+" + this.to + "+" + this.text + "+" + this.time;
-    }
+    };
 }
 
 /* A constructor for Event class */
@@ -68,7 +65,7 @@ function Event(from, to, text, time) {
     this.time = time;
     this.toString = function () {
         return this.from + "+" + this.to + "+" + this.text + "+" + this.time;
-    }
+    };
 }
 
 /**
@@ -214,11 +211,8 @@ app.post('/messages', function (req, res) {
 
 /* Login to the centralized server */
 function login(username, password, res) {
-    //fakeCentralServer.updateUserIp(username, getHostIp());
-    //res.render('login_success');
 
-    //crypt.init(username);
-
+    crypt.init(username);
     var loginSock = mp.getClientIO(CENTRAL_SERVER_IP, CENTRAL_SERVER_PORT);
     loginSock.emit('authenticate', username, password, getHostIp());
     loginSock.on('auth', function (data, flag) {
@@ -271,9 +265,7 @@ function multicastStatus(status) {
     getFollowers(function (followers) {
         for (var i in followers) {
             console.log('sending status update to' + followers[i].name);
-            //fakeCentralServer.getUserIp(followers[i].name, function (followerIp) {
             mp.send(UPDATE_STATUS, followers[i].name, true, username + '+' + status);
-            //});
         }
     });
 }
@@ -282,9 +274,7 @@ function multicastEvent(event) {
     var friends = event.to.split(',');
     for (var i in friends) {
         console.log('sending status update to' + friends[i].name);
-        //fakeCentralServer.getUserIp(followers[i].name, function (followerIp) {
         mp.send(UPDATE_EVENT, friends[i], true, event.toString());
-        //});
     }
 }
 
@@ -494,9 +484,6 @@ function getFollowers(fn) {
             });
 }
 
-var servers = { };
-var clients = { };
-
 var username = process.argv[2];
 crypt.init(username);
 console.log('Your name is ' + username);
@@ -521,28 +508,22 @@ peerServerSock.on('connection', function (socket) {
         redisClient.sadd(follower_key, follower);
     });
     socket.on(UPDATE_STATUS, function (msg) {
-        var decrypted_msg = crypt.decrypt(msg);
-        //var decrypted_msg = msg;
         var parsed_msg = decrypted_msg.split('+');
         var status_time = (new Date()).getTime();
         var status_json = JSON.stringify({ 'author': parsed_msg[0], 'time': status_time, 'text': parsed_msg[1] });
         console.log("received status update [" + parsed_msg[1] + "] from [" + parsed_msg[0] + "]");
         redisClient.zadd(status_key, status_time, status_json);
     });
-
     socket.on(SEND_MESSAGE, function (msg) {
         var decrypted_msg = crypt.decrypt(msg);
-        //var decrypted_msg = msg;
         var parsed_msg = decrypted_msg.split('+');
         var message_time = (new Date()).getTime();
-        var message_json = JSON.stringify({ 'from': parsed_msg[0], 'to': parsed_msg[1],'text': parsed_msg[2], 'time': message_time, });
+        var message_json = JSON.stringify({ 'from': parsed_msg[0], 'to': parsed_msg[1], 'text': parsed_msg[2], 'time': message_time, });
         console.log("received message [" + parsed_msg[2] + "] from [" + parsed_msg[0] + "]");
         redisClient.zadd(message_key, message_time, message_json);
     });
-
     socket.on(UPDATE_EVENT, function (msg) {
         var decrypted_msg = crypt.decrypt(msg);
-        //var decrypted_msg = msg;
         var parsed_msg = decrypted_msg.split('+');
         var event_time = (new Date()).getTime();
         var event_json = JSON.stringify({ 'from': parsed_msg[0], 'to': parsed_msg[1],'text': parsed_msg[2], 'time': event_time, });
