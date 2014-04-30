@@ -58,13 +58,14 @@ function Message(from, to, text, time) {
 }
 
 /* A constructor for Event class */
-function Event(from, to, text, time) {
+function Event(from, to, text, time, ftime) {
     this.from = from;
     this.to = to;
     this.text = text;
     this.time = time;
+    this.ftime = ftime;
     this.toString = function () {
-        return this.from + "+" + this.to + "+" + this.text + "+" + this.time;
+        return this.from + "+" + this.to + "+" + this.text + "+" + this.time + "+" + this.ftime;
     };
 }
 
@@ -162,8 +163,7 @@ app.post('/events', function (req, res) {
     var friends = req.body.friends;
     var event = req.body.event;
     var ftime = req.body.eventdate + req.body.eventtime;
-    //var event = new Event(username, friends, event, (new Date()).getTime());
-    var event = new Event(username, friends, event, ftime);
+    var event = new Event(username, friends, event, (new Date()).getTime(), ftime);
     multicastEvent(event);
     updateEvent(event, function (events) {
         res.render('events', { 'events': events } );
@@ -340,7 +340,7 @@ function getEvent(fn) {
                     res[0].forEach(function (e, i) {
                         var json = JSON.parse(e);
                         var date = new Date(json.time);
-                        events.push(new Event(json.from, json.to, json.text, date));
+                        events.push(new Event(json.from, json.to, json.text, date, json.ftime));
                     });
                     fn(events);
                 }
@@ -351,7 +351,7 @@ function updateEvent(event, fn) {
     var events = [];
     async.series([
             function (callback) {
-                var event_json = JSON.stringify({ 'from': event.from, 'to': event.to, 'text': event.text, 'time': event.time });
+                var event_json = JSON.stringify({ 'from': event.from, 'to': event.to, 'text': event.text, 'time': event.time, 'ftime': event.ftime });
                 redisClient.zadd(event_key, event.time, event_json, function (err, res) {
                     callback(err, res);
                 });
@@ -366,7 +366,7 @@ function updateEvent(event, fn) {
                     res[1].forEach(function (e, i) {
                         var json = JSON.parse(e);
                         var date = new Date(json.time);
-                        events.push(new Event(json.from, json.to, json.text, date));
+                        events.push(new Event(json.from, json.to, json.text, date, json.ftime));
                     });
                     fn(events);
                 }
