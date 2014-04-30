@@ -527,7 +527,7 @@ peerServerSock.on('connection', function (socket) {
         var decrypted_msg = crypt.decrypt(msg);
         var parsed_msg = decrypted_msg.split('+');
         var event_time = (new Date()).getTime();
-        var event_json = JSON.stringify({ 'from': parsed_msg[0], 'to': parsed_msg[1],'text': parsed_msg[2], 'time': event_time, });
+        var event_json = JSON.stringify({ 'from': parsed_msg[0], 'to': parsed_msg[1],'text': parsed_msg[2], 'time': event_time, 'ftime': parsed_msg[4] });
         console.log("received event [" + parsed_msg[2] + "] from [" + parsed_msg[0] + "]");
         redisClient.zadd(event_key, event_time, event_json);
     });
