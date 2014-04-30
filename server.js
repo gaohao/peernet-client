@@ -508,6 +508,7 @@ peerServerSock.on('connection', function (socket) {
         redisClient.sadd(follower_key, follower);
     });
     socket.on(UPDATE_STATUS, function (msg) {
+        var decrypted_msg = crypt.decrypt(msg);
         var parsed_msg = decrypted_msg.split('+');
         var status_time = (new Date()).getTime();
         var status_json = JSON.stringify({ 'author': parsed_msg[0], 'time': status_time, 'text': parsed_msg[1] });
