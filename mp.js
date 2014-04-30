@@ -40,7 +40,7 @@ exports.getServerIO = getServerIO;
 
 var getClientIO = function (ip, port) {
     if (clients[ip + port] == null) {
-        var socket = ioClient.connect(ip, {port:port,reconnect: false});
+        var socket = ioClient.connect(ip, {port:port,reconnect: true});
         if(socket==null) {
             return null;
         }
